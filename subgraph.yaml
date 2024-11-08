@@ -1,0 +1,35 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: LandWolf
+    network: mainnet
+    source:
+      address: "0x9c7D4Fb43919DEf524C1a9D92FE836169eAF0615"
+      abi: LandWolf
+      startBlock: 19386219
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - MaxTxAmountUpdated
+        - OwnershipTransferred
+        - Transfer
+      abis:
+        - name: LandWolf
+          file: ./abis/LandWolf.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,uint256)
+          handler: handleApproval
+        - event: MaxTxAmountUpdated(uint256)
+          handler: handleMaxTxAmountUpdated
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/land-wolf.ts
