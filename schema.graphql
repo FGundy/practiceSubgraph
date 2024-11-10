@@ -1,35 +1,107 @@
-type Approval @entity(immutable: true) {
-  id: Bytes!
-  owner: Bytes! # address
-  spender: Bytes! # address
-  value: BigInt! # uint256
+# schema.graphql
+enum AcquisitionType {
+  INITIAL_DISTRIBUTION
+  BOUGHT
+  RECEIVED_TRANSFER
+  AIRDROP
+}
+
+type Account @entity {
+  id: ID!
+  balance: BigInt!
+  isBot: Boolean!
+  isBotGuarded: Boolean!
+  isExcludedFromFee: Boolean!
+  transfersFrom: [Transfer!]! @derivedFrom(field: "from")
+  transfersTo: [Transfer!]! @derivedFrom(field: "to")
+  lastTransactionTimestamp: BigInt
+  initialDistributionAmount: BigInt!
+  totalReceivedAmount: BigInt!
+  totalBoughtAmount: BigInt!
+  acquisitions: [TokenAcquisition!]! @derivedFrom(field: "account")
+  isInitialDistributionReceiver: Boolean!
+  # Remove calculation-heavy fields but keep important metrics
+  totalBuyVolume: BigInt! # Keep raw volume
+  totalSellVolume: BigInt! # Keep raw volume
+}
+
+type TokenAcquisition @entity {
+  id: ID!
+  account: Account!
+  amount: BigInt!
+  acquisitionType: AcquisitionType!
+  timestamp: BigInt!
+  from: Account!
   blockNumber: BigInt!
-  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+  ethValue: BigInt # Add this for price reference
+}
+
+type Transfer @entity {
+  id: Bytes!
+  from: Account!
+  to: Account!
+  value: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  isBuy: Boolean!
+  isSell: Boolean!
+  ethValue: BigInt # Add this for swap price reference
+}
+
+type DailyMetric @entity {
+  id: ID!
+  date: String!
+  totalTransfers: BigInt!
+  volume: BigInt!
+  volumeEth: BigInt! # Add ETH volume
+  uniqueWallets: BigInt!
+  buyCount: BigInt! # Add buy/sell counts
+  sellCount: BigInt!
+}
+
+type FeeUpdate @entity {
+  id: Bytes!
+  timestamp: BigInt!
+  redisFeeOnBuy: BigInt!
+  redisFeeOnSell: BigInt!
+  taxFeeOnBuy: BigInt!
+  taxFeeOnSell: BigInt!
+  blockNumber: BigInt!
+}
+
+type Token @entity {
+  id: ID!
+  name: String!
+  symbol: String!
+  decimals: Int!
+  totalSupply: BigInt!
+  tradingEnabled: Boolean!
+  maxTxAmount: BigInt!
+  maxWalletSize: BigInt!
+  currentOwner: Bytes!
+  holderCount: BigInt!
+  totalTransactions: BigInt!
+  # Add some useful aggregates
+  totalVolume: BigInt!
+  totalVolumeEth: BigInt!
+}
+
+type Approval @entity {
+  id: ID!
+  owner: Account!
+  spender: Account!
+  value: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
   transactionHash: Bytes!
 }
 
-type MaxTxAmountUpdated @entity(immutable: true) {
-  id: Bytes!
-  _maxTxAmount: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type OwnershipTransferred @entity(immutable: true) {
-  id: Bytes!
-  previousOwner: Bytes! # address
-  newOwner: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type Transfer @entity(immutable: true) {
-  id: Bytes!
-  from: Bytes! # address
-  to: Bytes! # address
-  value: BigInt! # uint256
+type OwnershipTransferred @entity {
+  id: ID!
+  previousOwner: Bytes!
+  newOwner: Bytes!
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!

@@ -1,6 +1,6 @@
-specVersion: 1.0.0
-indexerHints:
-  prune: auto
+specVersion: 0.0.5
+description: Landwolf Token Analytics Subgraph
+repository: https://github.com/FabioGunderson/landwolf
 schema:
   file: ./schema.graphql
 dataSources:
@@ -15,21 +15,34 @@ dataSources:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
+      file: ./src/mapping.ts
       entities:
-        - Approval
-        - MaxTxAmountUpdated
-        - OwnershipTransferred
+        - Token
+        - Account
         - Transfer
+        - Approval
+        - DailyMetric
+        - FeeUpdate
+        - OwnershipTransferred
+        - TokenAcquisition
       abis:
         - name: LandWolf
           file: ./abis/LandWolf.json
+        - name: UniswapV2Pair
+          file: ./abis/UniswapV2Pair.json
       eventHandlers:
-        - event: Approval(indexed address,indexed address,uint256)
-          handler: handleApproval
-        - event: MaxTxAmountUpdated(uint256)
-          handler: handleMaxTxAmountUpdated
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-      file: ./src/land-wolf.ts
+        - event: Approval(indexed address,indexed address,uint256)
+          handler: handleApproval
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+      callHandlers:
+        - function: setTrading(bool)
+          handler: handleSetTrading
+        - function: setFee(uint256,uint256,uint256,uint256)
+          handler: handleSetFee
+        - function: blockBots(address[])
+          handler: handleBlockBots
+        - function: unblockBot(address)
+          handler: handleUnblockBot
