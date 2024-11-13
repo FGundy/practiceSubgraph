@@ -1,0 +1,28 @@
+First, remove the Windows Yarn path from your WSL environment:
+
+bashCopyexport PATH=$(echo $PATH | tr ':' '\n' | grep -v "/mnt/c/Users/fabio/AppData/Roaming/npm" | tr '\n' ':')
+
+Remove the global Yarn installation:
+
+bashCopynpm uninstall -g yarn
+
+Install Yarn using corepack (since you already have it installed):
+
+bashCopycorepack enable
+corepack prepare yarn@stable --activate
+
+Add these lines to your ~/.bashrc to ensure the correct paths are always used:
+
+bashCopy# Add these at the end of your ~/.bashrc
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+export PATH="$HOME/.nvm/versions/node/v20.10.0/bin:$PATH"
+
+Source your updated bashrc:
+
+bashCopysource ~/.bashrc
+
+Verify the installation:
+
+bashCopywhich yarn
+yarn --version

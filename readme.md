@@ -174,6 +174,13 @@ Trading statistics
 Portfolio analysis
 
 
+yarn install
+
+# 6. Generate types
+yarn codegen
+
+# 7. Build
+yarn build
 
 
 graph auth 9a41a39d565c45ce47e2a9666983a302
@@ -186,3 +193,4 @@ graph deploy --node https://api.studio.thegraph.com/deploy/ practice
 
 but fucking deploy a new version genius lmfao
 cat ~/.bashrc | clip.exe
+tree -I 'node_modules'
