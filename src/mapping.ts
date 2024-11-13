@@ -104,8 +104,8 @@ export function handleTransfer(event: TransferEvent): void {
   let uniswapPair = contract.uniswapV2Pair();
 
   // Update balances
-  from.balance = from.balance.minus(event.params.value);
-  to.balance = to.balance.plus(event.params.value);
+  from.balance = contract.balanceOf(event.params.from);
+  to.balance = contract.balanceOf(event.params.to);
 
   // Update timestamps
   from.lastTransactionTimestamp = event.block.timestamp;

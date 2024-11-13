@@ -185,3 +185,4 @@ graph deploy --node https://api.studio.thegraph.com/deploy/94090 practice
 graph deploy --node https://api.studio.thegraph.com/deploy/ practice
 
 but fucking deploy a new version genius lmfao
+cat ~/.bashrc | clip.exe
