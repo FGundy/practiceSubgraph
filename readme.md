@@ -174,6 +174,11 @@ Trading statistics
 Portfolio analysis
 
 
+
+
+rm -rf generated
+rm -rf build
+
 yarn install
 
 # 6. Generate types

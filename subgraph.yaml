@@ -19,12 +19,9 @@ dataSources:
       entities:
         - Token
         - Account
-        - Transfer
-        - Approval
-        - DailyMetric
+        - Transaction
+        - ReflectionRate
         - FeeUpdate
-        - OwnershipTransferred
-        - TokenAcquisition
       abis:
         - name: LandWolf
           file: ./abis/LandWolf.json
@@ -33,10 +30,10 @@ dataSources:
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-        - event: Approval(indexed address,indexed address,uint256)
-          handler: handleApproval
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
+        - event: MaxTxAmountUpdated(uint256)
+          handler: handleMaxTxAmountUpdated
       callHandlers:
         - function: setTrading(bool)
           handler: handleSetTrading
@@ -46,3 +43,10 @@ dataSources:
           handler: handleBlockBots
         - function: unblockBot(address)
           handler: handleUnblockBot
+        - function: excludeMultipleAccountsFromFees(address[],bool)
+          handler: handleExcludeFromFees
+        - function: setMaxWalletSize(uint256)
+          handler: handleSetMaxWalletSize
+      blockHandlers:
+        - handler: handleBlock
+templates: []

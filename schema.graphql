@@ -1,74 +1,13 @@
-# schema.graphql
-enum AcquisitionType {
+
+enum TransferType {
+  BUY
+  SELL
+  TRANSFER
   INITIAL_DISTRIBUTION
-  BOUGHT
-  RECEIVED_TRANSFER
-  AIRDROP
 }
-
-type Account @entity {
-  id: ID!
-  balance: BigInt!
-  isBot: Boolean!
-  isBotGuarded: Boolean!
-  isExcludedFromFee: Boolean!
-  transfersFrom: [Transfer!]! @derivedFrom(field: "from")
-  transfersTo: [Transfer!]! @derivedFrom(field: "to")
-  lastTransactionTimestamp: BigInt
-  initialDistributionAmount: BigInt!
-  totalReceivedAmount: BigInt!
-  totalBoughtAmount: BigInt!
-  acquisitions: [TokenAcquisition!]! @derivedFrom(field: "account")
-  isInitialDistributionReceiver: Boolean!
-  # Remove calculation-heavy fields but keep important metrics
-  totalBuyVolume: BigInt! # Keep raw volume
-  totalSellVolume: BigInt! # Keep raw volume
-}
-
-type TokenAcquisition @entity {
-  id: ID!
-  account: Account!
-  amount: BigInt!
-  acquisitionType: AcquisitionType!
-  timestamp: BigInt!
-  from: Account!
-  blockNumber: BigInt!
-  transactionHash: Bytes!
-  ethValue: BigInt # Add this for price reference
-}
-
-type Transfer @entity {
-  id: Bytes!
-  from: Account!
-  to: Account!
-  value: BigInt!
-  timestamp: BigInt!
-  blockNumber: BigInt!
-  transactionHash: Bytes!
-  isBuy: Boolean!
-  isSell: Boolean!
-  ethValue: BigInt # Add this for swap price reference
-}
-
-type DailyMetric @entity {
-  id: ID!
-  date: String!
-  totalTransfers: BigInt!
-  volume: BigInt!
-  volumeEth: BigInt! # Add ETH volume
-  uniqueWallets: BigInt!
-  buyCount: BigInt! # Add buy/sell counts
-  sellCount: BigInt!
-}
-
-type FeeUpdate @entity {
-  id: Bytes!
-  timestamp: BigInt!
-  redisFeeOnBuy: BigInt!
-  redisFeeOnSell: BigInt!
-  taxFeeOnBuy: BigInt!
-  taxFeeOnSell: BigInt!
-  blockNumber: BigInt!
+type AddressTracking @entity {
+    id: ID!
+    addresses: [String!]!
 }
 
 type Token @entity {
@@ -77,32 +16,103 @@ type Token @entity {
   symbol: String!
   decimals: Int!
   totalSupply: BigInt!
-  tradingEnabled: Boolean!
+  totalFees: BigInt!
+  redisFeeOnBuy: BigInt!
+  redisFeeOnSell: BigInt!
+  taxFeeOnBuy: BigInt!
+  taxFeeOnSell: BigInt!
+  currentRate: BigInt!
   maxTxAmount: BigInt!
   maxWalletSize: BigInt!
-  currentOwner: Bytes!
-  holderCount: BigInt!
-  totalTransactions: BigInt!
-  # Add some useful aggregates
-  totalVolume: BigInt!
-  totalVolumeEth: BigInt!
+  tradingEnabled: Boolean!
+  holders: [Account!]! @derivedFrom(field: "token")
+  transferCount: BigInt!
+  txCount: BigInt!
+  lastUpdateBlock: BigInt!
 }
 
-type Approval @entity {
+type Account @entity {
   id: ID!
-  owner: Account!
-  spender: Account!
-  value: BigInt!
+  token: Token!
+  balance: BigInt!
+  rBalance: BigInt!
+  isExcluded: Boolean!
+  isBlocked: Boolean!
+  transactions: [Transaction!]! @derivedFrom(field: "from")
+  receivedTransactions: [Transaction!]! @derivedFrom(field: "to")
+  lastUpdateBlock: BigInt!
+  lastUpdateRate: BigInt!
+  percentageOwned: BigDecimal!
+  formattedBalance: BigDecimal! # Add this field
+  isContract: Boolean!
+  delegatedBalance: BigInt!
+  liquidityPositions: [LiquidityPosition!]! @derivedFrom(field: "account")
+  lastReflectionRate: BigInt  # For reflection tokens
+}
+
+type ReflectionRate @entity {
+  id: ID!
+  token: Token!
+  rate: BigInt!
+  block: BigInt!
   timestamp: BigInt!
-  blockNumber: BigInt!
-  transactionHash: Bytes!
 }
 
-type OwnershipTransferred @entity {
+type Transaction @entity {
   id: ID!
-  previousOwner: Bytes!
-  newOwner: Bytes!
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+  token: Token!
+  from: Account!
+  to: Account!
+  value: BigInt!
+  transferType: TransferType!
+  reflectionValue: BigInt!
+  feeAmount: BigInt!
+  redisFee: BigInt!
+  taxFee: BigInt!
+  timestamp: BigInt!
+  block: BigInt!
+  transactionHash: String!
+  dexPair: String  # Address of DEX pair if applicable
+  priceInETH: BigDecimal
 }
+
+type FeeUpdate @entity {
+  id: ID!
+  token: Token!
+  redisFeeOnBuy: BigInt!
+  redisFeeOnSell: BigInt!
+  taxFeeOnBuy: BigInt!
+  taxFeeOnSell: BigInt!
+  timestamp: BigInt!
+  block: BigInt!
+  transactionHash: String!
+}
+
+type BalanceSnapshot @entity {
+  id: ID!
+  account: Account!
+  balance: BigInt!
+  blockNumber: BigInt!
+  rate: BigInt!
+  timestamp: BigInt!
+}
+
+type DelegateBalance @entity {
+  id: ID!
+  account: Account!
+  delegator: Account!
+  votes: BigInt!
+  timestamp: BigInt!
+}
+
+type LiquidityPosition @entity {
+  id: ID!
+  pair: Bytes!  # DEX pair address
+  account: Account!
+  liquidityTokenBalance: BigInt!
+  token0Balance: BigInt!
+  token1Balance: BigInt!
+  block: BigInt!
+  timestamp: BigInt!
+}
+
